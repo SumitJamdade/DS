@@ -54,9 +54,9 @@ def dashboard():
     st.subheader("💼 My Portfolio")
 
     portfolio = {
-        "TCS": 10,
-        "INFOSYS": 5,
-        "RELIANCE": 3
+        "SFM": 10,
+        "GPH": 5,
+        "QBX": 3
     }
 
     total_value = 0
