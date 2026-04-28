@@ -31,7 +31,7 @@ if "logged_in" not in st.session_state:
 
 # ------------------ LOGIN ------------------
 def login():
-    st.title("💼 Smart Trade Login")
+    st.title("Smart Trade Login")
 
     user = st.text_input("Username")
     pwd = st.text_input("Password", type="password")
@@ -46,12 +46,12 @@ def login():
 # ------------------ DASHBOARD ------------------
 def dashboard():
 
-    st.title("📊 Smart Trade Dashboard")
+    st.title("Smart Trade Dashboard")
 
     st.info("Welcome to Smart Trade 🚀 — an AI-powered platform to monitor your portfolio, analyze stock performance, and predict future prices for smarter trading decisions.")
 
     # -------- Portfolio --------
-    st.subheader("💼 My Portfolio")
+    st.subheader("My Portfolio")
 
     portfolio = {
         "SFM": 10,
@@ -71,12 +71,12 @@ def dashboard():
 
             st.write(f"{stock} → {qty} shares | ₹{price:.2f} | Value: ₹{value:.2f}")
 
-    st.success(f"💰 Total Portfolio Value: ₹{total_value:.2f}")
+    st.success(f"Total Portfolio Value: ₹{total_value:.2f}")
 
     st.divider()
 
     # -------- Search --------
-    st.subheader("🔍 Search Company")
+    st.subheader("Search Company")
 
     search = st.text_input("Enter company name")
 
@@ -87,26 +87,28 @@ def dashboard():
     st.divider()
 
     # -------- News --------
-    st.subheader("📰 Market News")
+    st.subheader("Market News")
 
-    st.write("• IT stocks are showing steady growth 📈")
-    st.write("• Banking sector is stable 🏦")
-    st.write("• Global market trends affecting volatility 🌍")
+    st.write("• War tensions increasing global market volatility ")
+    st.write("• Oil prices rising sharply affecting stock performance ")
+    st.write("• Heatwaves increasing electricity demand and inflation ")
+    st.write("• Investors becoming cautious due to global uncertainty ")
+    st.write("• Market fluctuations impacting stock prediction accuracy ")
 
 # ------------------ PREDICTION ------------------
 def prediction_page():
 
-    st.title("📈 Predict Stock Closing Price")
+    st.title(" Predict Stock Closing Price")
 
     # Company dropdown
     company = st.selectbox("Select Company", df['ticker'].unique())
 
     data = df[df['ticker'] == company].iloc[-1]
 
-    st.subheader("📊 Latest Data Used")
+    st.subheader("Latest Data Used")
     st.write(data[['open_price', 'high_price', 'low_price', 'volume_traded']])
 
-    if st.button("🚀 Predict"):
+    if st.button("Predict"):
 
         input_data = np.array([[ 
             data['open_price'],
@@ -117,16 +119,16 @@ def prediction_page():
 
         prediction = model.predict(input_data)
 
-        st.success(f"💰 Predicted Closing Price: ₹{prediction[0]:.2f}")
+        st.success(f"Predicted Closing Price: ₹{prediction[0]:.2f}")
 
         # Trend
         if prediction[0] > data['open_price']:
-            st.success("📈 Market Trend: UP")
+            st.success("Market Trend: UP")
         else:
-            st.error("📉 Market Trend: DOWN")
+            st.error("Market Trend: DOWN")
 
         # Explanation
-        st.subheader("🧠 Why this prediction?")
+        st.subheader("Why this prediction?")
 
         st.info("""
 The model analyzes relationship between:
@@ -145,7 +147,7 @@ Prediction is based on patterns learned from historical stock data.
 # ------------------ ACCOUNT ------------------
 def account():
 
-    st.title("👤 My Account")
+    st.title("My Account")
 
     st.write("Username: admin")
     st.write("Plan: Basic Trader")
@@ -158,7 +160,7 @@ def account():
 if not st.session_state.logged_in:
     login()
 else:
-    st.sidebar.title("🚀 Smart Trade")
+    st.sidebar.title("Smart Trade")
 
     page = st.sidebar.radio("Navigation", ["Dashboard", "Predict", "Account"])
 
