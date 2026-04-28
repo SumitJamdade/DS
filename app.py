@@ -1,51 +1,26 @@
 import streamlit as st
 import pickle
 import numpy as np
+import pandas as pd
 
 # ------------------ LOAD MODEL ------------------
 model = pickle.load(open("model.pkl", "rb"))
 
-# ------------------ PAGE CONFIG ------------------
-st.set_page_config(page_title="Stock AI", page_icon="📈", layout="wide")
+# ------------------ LOAD DATA ------------------
+df = pd.read_csv("processed_data.csv")
+df.columns = df.columns.str.lower()
 
-# ------------------ CUSTOM CSS ------------------
+# ------------------ PAGE CONFIG ------------------
+st.set_page_config(page_title="Smart Trade", page_icon="📈", layout="wide")
+
+# ------------------ CSS ------------------
 st.markdown("""
 <style>
-body {
-    background-color: #0E1117;
-}
-.main {
-    background-color: #0E1117;
-}
-
-/* Cards */
 .card {
     background-color: #1E1E2E;
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-}
-
-/* Buttons */
-.stButton>button {
-    background: linear-gradient(90deg, #00C9FF, #92FE9D);
-    color: black;
-    font-weight: bold;
-    border-radius: 10px;
-    height: 3em;
-    width: 100%;
-}
-
-/* Inputs */
-.stNumberInput input, .stTextInput input {
-    background-color: #262730;
-    color: white;
-    border-radius: 8px;
-}
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #111827;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -56,73 +31,124 @@ if "logged_in" not in st.session_state:
 
 # ------------------ LOGIN ------------------
 def login():
-    st.markdown("<h1 style='text-align:center;'>🔐 Login</h1>", unsafe_allow_html=True)
+    st.title("💼 Smart Trade Login")
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    user = st.text_input("Username")
+    pwd = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        if username == "admin" and password == "1234":
+        if user == "admin" and pwd == "1234":
             st.session_state.logged_in = True
-            st.success("Login Successful 🚀")
             st.rerun()
         else:
-            st.error("Invalid Credentials ❌")
+            st.error("Invalid credentials")
 
 # ------------------ DASHBOARD ------------------
 def dashboard():
-    st.markdown("<h1>📊 Dashboard</h1>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    st.title("📊 Smart Trade Dashboard")
 
-    col1.markdown('<div class="card"><h3>Accuracy</h3><h2>77%</h2></div>', unsafe_allow_html=True)
-    col2.markdown('<div class="card"><h3>Model</h3><h2>XGBoost</h2></div>', unsafe_allow_html=True)
-    col3.markdown('<div class="card"><h3>Status</h3><h2 style="color:lightgreen;">Active</h2></div>', unsafe_allow_html=True)
+    st.info("Welcome to Smart Trade — AI based stock prediction platform.")
+
+    # -------- Portfolio --------
+    st.subheader("💼 My Portfolio")
+
+    portfolio = {
+        "TCS": 10,
+        "INFOSYS": 5,
+        "RELIANCE": 3
+    }
+
+    total_value = 0
+
+    for stock, qty in portfolio.items():
+        stock_data = df[df['ticker'] == stock]
+
+        if not stock_data.empty:
+            price = stock_data.iloc[-1]['close_price']
+            value = price * qty
+            total_value += value
+
+            st.write(f"{stock} → {qty} shares | ₹{price:.2f} | Value: ₹{value:.2f}")
+
+    st.success(f"💰 Total Portfolio Value: ₹{total_value:.2f}")
 
     st.divider()
 
-    st.subheader("📈 About System")
-    st.info("AI model predicts stock closing price using Open, High, Low & Volume data.")
+    # -------- Search --------
+    st.subheader("🔍 Search Company")
 
-# ------------------ PREDICT ------------------
+    search = st.text_input("Enter company name")
+
+    if search:
+        result = df[df['ticker'].str.contains(search.upper())]
+        st.dataframe(result[['ticker', 'open_price', 'close_price']].tail(10))
+
+    st.divider()
+
+    # -------- News --------
+    st.subheader("📰 Market News")
+
+    st.write("• IT stocks are showing steady growth 📈")
+    st.write("• Banking sector is stable 🏦")
+    st.write("• Global market trends affecting volatility 🌍")
+
+# ------------------ PREDICTION ------------------
 def prediction_page():
-    st.markdown("<h1>📈 Predict Stock</h1>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    st.title("📈 Predict Stock Closing Price")
 
-    with col1:
-        open_price = st.number_input("Open Price", min_value=0.0)
-        low_price = st.number_input("Low Price", min_value=0.0)
+    # Company dropdown
+    company = st.selectbox("Select Company", df['ticker'].unique())
 
-    with col2:
-        high_price = st.number_input("High Price", min_value=0.0)
-        volume = st.number_input("Volume Traded", min_value=0.0)
+    data = df[df['ticker'] == company].iloc[-1]
+
+    st.subheader("📊 Latest Data Used")
+    st.write(data[['open_price', 'high_price', 'low_price', 'volume_traded']])
 
     if st.button("🚀 Predict"):
-        input_data = np.array([[open_price, high_price, low_price, volume]])
+
+        input_data = np.array([[ 
+            data['open_price'],
+            data['high_price'],
+            data['low_price'],
+            data['volume_traded']
+        ]])
+
         prediction = model.predict(input_data)
 
-        st.markdown(f"""
-        <div class="card">
-            <h2>💰 Predicted Price: {prediction[0]:.2f}</h2>
-        </div>
-        """, unsafe_allow_html=True)
+        st.success(f"💰 Predicted Closing Price: ₹{prediction[0]:.2f}")
 
-        if prediction[0] > open_price:
+        # Trend
+        if prediction[0] > data['open_price']:
             st.success("📈 Market Trend: UP")
         else:
             st.error("📉 Market Trend: DOWN")
 
+        # Explanation
+        st.subheader("🧠 Why this prediction?")
+
+        st.info("""
+The model analyzes relationship between:
+
+• Open Price  
+• High Price  
+• Low Price  
+• Volume  
+
+Higher demand & volume → price increases  
+Lower demand → price drops  
+
+Prediction is based on patterns learned from historical stock data.
+""")
+
 # ------------------ ACCOUNT ------------------
 def account():
-    st.markdown("<h1>👤 Account</h1>", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class="card">
-        <h3>Username: admin</h3>
-        <h3>Role: User</h3>
-    </div>
-    """, unsafe_allow_html=True)
+    st.title("👤 My Account")
+
+    st.write("Username: admin")
+    st.write("Plan: Basic Trader")
 
     if st.button("Logout"):
         st.session_state.logged_in = False
@@ -132,9 +158,9 @@ def account():
 if not st.session_state.logged_in:
     login()
 else:
-    st.sidebar.title("🚀 Smart Navigation")
+    st.sidebar.title("🚀 Smart Trade")
 
-    page = st.sidebar.radio("Go to", ["Dashboard", "Predict", "Account"])
+    page = st.sidebar.radio("Navigation", ["Dashboard", "Predict", "Account"])
 
     if page == "Dashboard":
         dashboard()
