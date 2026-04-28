@@ -48,7 +48,7 @@ def dashboard():
 
     st.title("📊 Smart Trade Dashboard")
 
-    st.info("Welcome to Smart Trade — AI based stock prediction platform.")
+    st.info("Welcome to Smart Trade 🚀 — an AI-powered platform to monitor your portfolio, analyze stock performance, and predict future prices for smarter trading decisions.")
 
     # -------- Portfolio --------
     st.subheader("💼 My Portfolio")
